@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Repositories\ProductRepositoryInterface;
 
 class ProductController extends Controller
 {
+    private ProductRepositoryInterface $productRepository;
+
+    public function __construct(ProductRepositoryInterface $productRepository)
+    {
+        $this->productRepository = $productRepository;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -14,7 +21,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return Product::all();
+        return $this->productRepository->getAllProducts();
     }
 
     /**
@@ -25,13 +32,15 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $details = $request->validate([
             'name' => 'required',
             'slug' => 'required|unique:products,slug',
+            'description' => 'nullable',
             'price' => 'required|numeric'
         ]);
 
-        return Product::create($request->all());
+
+        return $this->productRepository->createProduct($details);
     }
 
     /**
@@ -42,7 +51,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        return Product::find($id);
+        return $this->productRepository->getProductById($id);
     }
 
     /**
@@ -50,13 +59,11 @@ class ProductController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return App\Models\Product
      */
     public function update(Request $request, $id)
     {
-        $product = Product::find($id);
-        $product->update($request->all());
-        return $product;
+        return $this->productRepository->updateProduct($id, $request->all());
     }
 
     /**
@@ -67,7 +74,7 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        return Product::destroy($id);
+        return $this->productRepository->deleteProduct($id);
     }
 
     /**
@@ -78,6 +85,6 @@ class ProductController extends Controller
      */
     public function search($name)
     {
-        return Product::where('name', 'like', '%'.$name.'%')->get();
+        return $this->productRepository->searchProductByName($name);
     }
 }
