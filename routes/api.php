@@ -14,7 +14,6 @@ use App\Http\Controllers\ProductController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-// Route::resource('/products', ProductController::class);
 
 //  Register user
 Route::post('/register', [AuthController::class, 'register']);
@@ -31,6 +30,5 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
-    // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 });
