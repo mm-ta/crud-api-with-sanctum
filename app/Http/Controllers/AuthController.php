@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use App\Repositories\UserRepositoryInterface;
 
 class AuthController extends Controller
 {
+    private $userRepository;
+
+    public function __construct(UserRepositoryInterface $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
     public function register(Request $request)
     {
         $fields = $request->validate([
@@ -17,11 +23,7 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed'
         ]);
 
-        $user = User::create([
-            'name' => $fields['name'],
-            'email' => $fields['email'],
-            'password' => bcrypt($fields['password']),
-        ]);
+        $user = $this->userRepository->createUser($fields);
 
         $accessToken = $user->createToken('apiapp');
 
@@ -41,7 +43,7 @@ class AuthController extends Controller
         ]);
 
         // check email
-        $user = User::where('email', $credentials['email'])->first();
+        $user = $this->userRepository->getUserWithEmail($credentials['email']);
 
         // check password
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
